@@ -32,7 +32,7 @@ jobs:
 
       - name: Publish (single-file, self-contained)
         run: |
-          dotnet publish WuwaVHLauncher.csproj `
+          dotnet publish NTEVHLauncher.csproj `
             -c Release `
             -o ./publish
 
