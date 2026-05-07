@@ -336,23 +336,20 @@ public partial class MainWindow : Window
             if (toDownload.Count == 0)
                 throw new Exception("Không tìm thấy file cài đặt trên máy chủ.");
 
-            bool allFilesUpToDate = true;
-            foreach (var (name, _, _, hash) in toDownload)
+            bool newVersion = !string.IsNullOrEmpty(tagName) &&
+                              (!localCache.TryGetValue("_vhVersion", out var cachedTag) || cachedTag != tagName);
+
+            bool allFilesUpToDate = !newVersion;
+            if (allFilesUpToDate)
             {
-                var destPath = Path.Combine(baseDir, name);
-                
-                if (!File.Exists(destPath))
+                foreach (var (name, _, _, hash) in toDownload)
                 {
-                    allFilesUpToDate = false;
-                    break;
-                }
-                
-                if (!string.IsNullOrEmpty(hash))
-                {
-                    if (!localCache.TryGetValue(name, out var localHash) || localHash != hash)
+                    var destPath = Path.Combine(baseDir, name);
+                    if (!File.Exists(destPath)) { allFilesUpToDate = false; break; }
+                    if (!string.IsNullOrEmpty(hash) &&
+                        (!localCache.TryGetValue(name, out var localHash) || localHash != hash))
                     {
-                        allFilesUpToDate = false;
-                        break;
+                        allFilesUpToDate = false; break;
                     }
                 }
             }
@@ -376,10 +373,9 @@ public partial class MainWindow : Window
             foreach (var (name, _, size, hash) in toDownload)
             {
                 var destPath = Path.Combine(baseDir, name);
-                bool needsUpdate = !File.Exists(destPath) ||
-                                   string.IsNullOrEmpty(hash) ||
-                                   !localCache.TryGetValue(name, out var cachedHash) ||
-                                   cachedHash != hash;
+                bool needsUpdate = !File.Exists(destPath) || newVersion ||
+                                   (!string.IsNullOrEmpty(hash) &&
+                                    (!localCache.TryGetValue(name, out var cachedHash) || cachedHash != hash));
                 if (needsUpdate)
                 {
                     needsUpdateSet.Add(name);
