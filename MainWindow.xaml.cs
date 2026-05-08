@@ -449,27 +449,23 @@ public partial class MainWindow : Window
     {
         try
         {
-            var exeDir = Path.Combine(gamePath, @"Client\WindowsNoEditor\HT\Binaries\Win64");
-            string? full = null;
-            foreach (var n in new[] { "HTGame-Win64-Shipping.exe", "HTGame.exe" })
-            {
-                var candidate = Path.Combine(exeDir, n);
-                if (File.Exists(candidate)) { full = candidate; break; }
-            }
-            if (full != null)
+            var launcherExe = Path.Combine(gamePath, "NTEGlobalLauncher.exe");
+            if (!File.Exists(launcherExe))
+                launcherExe = @"C:\Program Files\Neverness To Everness\NTEGlobalLauncher.exe";
+
+            if (File.Exists(launcherExe))
             {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = full,
-                    Arguments = "",
-                    WorkingDirectory = Path.GetDirectoryName(full),
+                    FileName = launcherExe,
+                    WorkingDirectory = Path.GetDirectoryName(launcherExe),
                     UseShellExecute = true
                 });
                 Dispatcher.Invoke(() => WindowState = WindowState.Minimized);
             }
             else
             {
-                RunScript($"window.onInstallError({JsStr("Không tìm thấy file game: HTGame-Win64-Shipping.exe")})");
+                RunScript($"window.onInstallError({JsStr("Không tìm thấy NTEGlobalLauncher.exe. Vui lòng mở launcher game thủ công.")})");
             }
         }
         catch (Exception ex)
